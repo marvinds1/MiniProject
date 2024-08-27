@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MediatR" Version="12.4.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Persistence\Persistence.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Features\Auth\" />
+      <Folder Include="Interface\" />
+      <Folder Include="Interface\Service\" />
+      <Folder Include="Features\ToDo\" />
+      <Folder Include="Features\ToDo\Queries\" />
+      <Folder Include="Features\ToDo\Commands\" />
+      <Folder Include="Features\ToDoDetail\" />
+      <Folder Include="Features\ToDoDetail\Commands\" />
+      <Folder Include="Features\ToDoDetail\Queries\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Features\Auth\" />
+      <None Remove="Interface\" />
+      <None Remove="Interface\Service\" />
+      <None Remove="Features\ToDo\" />
+      <None Remove="Features\ToDo\Queries\" />
+      <None Remove="Features\ToDo\Commands\" />
+      <None Remove="Features\ToDoDetail\" />
+      <None Remove="Features\ToDoDetail\Commands\" />
+      <None Remove="Features\ToDoDetail\Queries\" />
+    </ItemGroup>
+</Project>
