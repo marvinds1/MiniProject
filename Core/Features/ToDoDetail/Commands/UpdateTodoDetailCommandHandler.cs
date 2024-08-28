@@ -23,6 +23,11 @@ namespace Application.Features.TodoDetail.Commands
                 throw new KeyNotFoundException("TodoDetail not found");
             }
 
+            if (request.TodoDetail.Category != "Task" && request.TodoDetail.Category != "Daily Activity")
+            {
+                throw new ArgumentException("Category must be either 'Task' or 'Daily Activity'");
+            }
+
             todoDetail.TodoId = request.TodoDetail.TodoId;
             todoDetail.Activity = request.TodoDetail.Activity;
             todoDetail.Category = request.TodoDetail.Category;

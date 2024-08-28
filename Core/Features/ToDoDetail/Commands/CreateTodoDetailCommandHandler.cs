@@ -17,6 +17,11 @@ namespace Application.Features.TodoDetail.Commands
 
         public async Task<TodoDetailResponse> Handle(CreateTodoDetailCommand request, CancellationToken cancellationToken)
         {
+            if (request.TodoDetail.Category != "Task" && request.TodoDetail.Category != "Daily Activity")
+            {
+                throw new ArgumentException("Category must be either 'Task' or 'Daily Activity'");
+            }
+
             var todoDetail = new TodoDetail1
             {
                 TodoDetailId = Guid.NewGuid(),
