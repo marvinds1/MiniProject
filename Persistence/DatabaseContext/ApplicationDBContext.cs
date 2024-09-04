@@ -1,8 +1,6 @@
 ﻿using Persistence.Models;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Persistence.Models.Persistence.Models;
 
 namespace Persistence.DatabaseContext;
 
@@ -44,13 +42,13 @@ public class ApplicationDBContext : IdentityDbContext<User>
                   .WithMany(p => p.TodoDetails)
                   .HasForeignKey(d => d.TodoId);
         });
-    }
 
-    //protected override void OnModelCreating(ModelBuilder builder)
-    //{
-    //    base.OnModelCreating(builder);
-    //    // Customize the ASP.NET Identity model and override the defaults if needed.
-    //    // For example, you can rename the ASP.NET Identity table names and more.
-    //    // Add your customizations after calling base.OnModelCreating(builder);
-    //}
+        modelBuilder.Entity<UserToken>(entity =>
+        {
+            entity.ToTable("UserToken");
+            entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name });
+            entity.Property(e => e.Value).IsRequired();
+            entity.Property(e => e.Expiry).IsRequired();
+        });
+    }
 }

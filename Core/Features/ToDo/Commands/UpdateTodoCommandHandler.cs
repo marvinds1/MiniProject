@@ -1,9 +1,8 @@
 ﻿using System;
 using MediatR;
 using Persistence.DatabaseContext;
-using Persistence.Models;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text.Json;
 
 namespace Application.Features.Todo.Commands
 {
@@ -11,7 +10,7 @@ namespace Application.Features.Todo.Commands
     {
         private readonly ApplicationDBContext _context;
 
-        public UpdateTodoCommandHandler(ApplicationDBContext context)
+        public UpdateTodoCommandHandler(ApplicationDBContext context, IDistributedCache cache)
         {
             _context = context;
         }

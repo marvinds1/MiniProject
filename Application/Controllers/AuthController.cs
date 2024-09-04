@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using Application.helpers;
+using Persistence.Models;
 
 namespace Application.Controllers
 {
@@ -13,11 +14,15 @@ namespace Application.Controllers
     {
         private readonly AuthService _authService;
         private readonly TokenService _tokenService;
+        private readonly ILogger<AuthService> _logger;
+        private readonly JwtTokenHelpers _jwtToken;
 
-        public AuthController(AuthService authService, TokenService tokenService)
+        public AuthController(AuthService authService, TokenService tokenService, ILogger<AuthService> logger, JwtTokenHelpers jwtToken)
         {
             _authService = authService;
             _tokenService = tokenService;
+            _logger = logger;
+            _jwtToken = jwtToken;
         }
 
         [AllowAnonymous]
@@ -71,11 +76,7 @@ namespace Application.Controllers
 
             var response = new MainResponse
             {
-                Content = new AuthenticationResponse
-                {
-                    RefreshToken = result.RefreshToken,
-                    AccessToken = result.AccessToken
-                },
+                Content = result,
                 IsSuccess = true,
                 ErrorMessage = ""
             };
@@ -116,30 +117,20 @@ namespace Application.Controllers
             return Ok(response);
         }
 
-        [HttpPost("logout")]
+        [HttpPost("Logout")]
         public async Task<IActionResult> Logout()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userId != null)
+            var token = Request.Headers["Authorization"].ToString().Substring("Bearer ".Length).Trim();
+            if (string.IsNullOrEmpty(token))
             {
-                await _tokenService.RemoveTokenAsync(userId);
+                return Unauthorized("Missing or invalid Authorization header.");
             }
-            return NoContent();
-        }
 
-        [HttpPost("validate-token")]
-        public async Task<IActionResult> ValidateToken(string token)
-        {
-            var userId = JwtTokenHelpers.GetUserIdFromToken(token); // Implement this method based on your JWT logic
-            if (userId != null)
-            {
-                var storedToken = await _tokenService.GetTokenAsync(userId);
-                if (storedToken == token)
-                {
-                    return Ok(); // Token is valid
-                }
-            }
-            return Unauthorized(); // Token is invalid
+            var userId = _jwtToken.GetUserIdFromToken(token);
+
+            await _tokenService.RemoveTokenAsync(userId);
+
+            return NoContent();
         }
 
     }

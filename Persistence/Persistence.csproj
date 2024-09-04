@@ -29,10 +29,12 @@
       <None Remove="Repositories\Cache\" />
       <None Remove="Repositories\ToDo\" />
       <None Remove="Repositories\ToDoDetail\" />
+      <None Remove="Repositories\UserToken\" />
     </ItemGroup>
     <ItemGroup>
       <Folder Include="Repositories\Cache\" />
       <Folder Include="Repositories\ToDo\" />
       <Folder Include="Repositories\ToDoDetail\" />
+      <Folder Include="Repositories\UserToken\" />
     </ItemGroup>
 </Project>

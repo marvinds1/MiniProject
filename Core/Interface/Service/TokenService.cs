@@ -1,83 +1,112 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
-using Persistence.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
 using Persistence.DatabaseContext;
+using Persistence.Models;
+using Persistence.Repositories;
 using System;
-using Persistence.Models.Persistence.Models;
+using System.Threading.Tasks;
 
-public class TokenService
+namespace Core.Interface.Service
 {
-    private readonly IDistributedCache _cache;
-    private readonly ApplicationDBContext _context;
-    private readonly TimeSpan _tokenExpiry = TimeSpan.FromHours(1);
-
-    public TokenService(IDistributedCache cache, ApplicationDBContext context)
+    public class TokenService
     {
-        _cache = cache;
-        _context = context;
-    }
+        private readonly IDistributedCache _cache;
+        private readonly IUserTokenRepository _userTokenRepository;
+        private readonly TimeSpan _tokenExpiry = TimeSpan.FromHours(1);
 
-    public async Task StoreTokenAsync(string userId, string token)
-    {
-        try
+        public TokenService(IDistributedCache cache, IUserTokenRepository userTokenRepository)
         {
-            await _cache.SetStringAsync(userId, token, new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = _tokenExpiry
-            });
+            _cache = cache;
+            _userTokenRepository = userTokenRepository;
         }
-        catch (Exception)
+
+        public async Task StoreTokenAsync(string userId, string token)
         {
-            // Jika Redis tidak tersedia, gunakan database
-            var userToken = await _context.UserTokens.FindAsync(userId);
-            if (userToken == null)
+            try
             {
-                userToken = new UserToken
+                await _cache.SetStringAsync(userId, token, new DistributedCacheEntryOptions
                 {
-                    UserId = userId,
-                    LoginProvider = "JWT",
-                    Name = "AccessToken",
-                    Value = token,
-                    Expiry = DateTime.UtcNow.Add(_tokenExpiry)
-                };
-                _context.UserTokens.Add(userToken);
+                    AbsoluteExpirationRelativeToNow = _tokenExpiry
+                });
             }
-            else
+            catch (Exception ex)
             {
-                userToken.Value = token;
+                Console.WriteLine($"Error saving token to cache: {ex.Message}");
             }
-            await _context.SaveChangesAsync();
-        }
-    }
 
-    public async Task<string?> GetTokenAsync(string userId)
-    {
-        try
-        {
-            return await _cache.GetStringAsync(userId);
-        }
-        catch (Exception)
-        {
-            // Jika Redis tidak tersedia, gunakan database
-            var userToken = await _context.UserTokens.FindAsync(userId);
-            return userToken?.Value;
-        }
-    }
-
-    public async Task RemoveTokenAsync(string userId)
-    {
-        try
-        {
-            await _cache.RemoveAsync(userId);
-        }
-        catch (Exception)
-        {
-            var userToken = await _context.UserTokens.FindAsync(userId);
-            if (userToken != null)
+            try
             {
-                _context.UserTokens.Remove(userToken);
-                await _context.SaveChangesAsync();
+                var userToken = await _userTokenRepository.GetUserTokenAsync(userId);
+                if (userToken == null)
+                {
+                    userToken = new UserToken
+                    {
+                        UserId = userId,
+                        LoginProvider = "custom",
+                        Name = "AccessToken",
+                        Value = token,
+                        Expiry = DateTime.UtcNow.Add(_tokenExpiry)
+                    };
+                    await _userTokenRepository.AddUserTokenAsync(userToken);
+                }
+                else
+                {
+                    userToken.Value = token;
+                    userToken.Expiry = DateTime.UtcNow.Add(_tokenExpiry);
+                    await _userTokenRepository.UpdateUserTokenAsync(userToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving token to database: {ex.Message}");
+            }
+        }
+
+        public async Task<string?> GetTokenAsync(string userId)
+        {
+            try
+            {
+                var token = await _cache.GetStringAsync(userId);
+                if (!string.IsNullOrEmpty(token))
+                {
+                    return token;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving token from cache: {ex.Message}");
+            }
+
+            try
+            {
+                var userToken = await _userTokenRepository.GetUserTokenAsync(userId);
+                return userToken?.Value;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving token from database: {ex.Message}");
+            }
+
+            return null;
+        }
+
+        public async Task RemoveTokenAsync(string userId)
+        {
+            try
+            {
+                await _cache.RemoveAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error removing token from cache: {ex.Message}");
+            }
+
+            try
+            {
+                await _userTokenRepository.RemoveUserTokenAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error removing token from database: {ex.Message}");
             }
         }
     }

@@ -4,6 +4,8 @@ using Persistence.DatabaseContext;
 using Persistence.Models;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Caching.Distributed;
+using Newtonsoft.Json;
 
 namespace Application.Features.Todo.Commands
 {
@@ -11,7 +13,7 @@ namespace Application.Features.Todo.Commands
     {
         private readonly ApplicationDBContext _context;
 
-        public CreateTodoCommandHandler(ApplicationDBContext context)
+        public CreateTodoCommandHandler(ApplicationDBContext context, IDistributedCache cache)
         {
             _context = context;
         }
@@ -19,15 +21,14 @@ namespace Application.Features.Todo.Commands
         public async Task<TodoResponse> Handle(CreateTodoCommand request, CancellationToken cancellationToken)
         {
             var todayDate = DateTime.Now;
-            var detailCount = _context.TodoDetails.Count(td => td.TodoId == request.Todo.TodoId);
 
             var todo = new Todo1
             {
                 TodoId = Guid.NewGuid(),
-                Day = request.Todo.Day,
+                Day = request.day,
                 TodayDate = todayDate,
-                Note = request.Todo.Note,
-                DetailCount = detailCount
+                Note = request.note,
+                DetailCount = 0
             };
 
             _context.Todos.Add(todo);

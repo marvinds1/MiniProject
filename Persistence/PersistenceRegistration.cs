@@ -3,10 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Persistence.DatabaseContext;
 using Persistence.Repositories;
-using Persistence.Repositories.ToDo;
-using Persistence.Repositories.ToDoDetail;
+//using Persistence.Repositories.ToDo;
+//using Persistence.Repositories.ToDoDetail;
 using StackExchange.Redis;
-using System;
 
 namespace Persistence
 {
@@ -17,18 +16,15 @@ namespace Persistence
             string dbConnection = configuration.GetConnectionString("Database");
             string redisConnection = configuration.GetConnectionString("Redis");
 
-            // Mendaftarkan ApplicationDBContext
             services.AddDbContext<ApplicationDBContext>(opt =>
                 opt.UseMySql(dbConnection, ServerVersion.AutoDetect(dbConnection))
             );
 
-            // Mendaftarkan StackExchangeRedisCache
             services.AddStackExchangeRedisCache(opt =>
             {
                 opt.Configuration = redisConnection;
             });
 
-            // Mendaftarkan ConnectionMultiplexer sebagai singleton
             services.AddSingleton<ConnectionMultiplexer>(sp =>
             {
                 try
@@ -37,15 +33,14 @@ namespace Persistence
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Failed to connect to Redis: {ex.Message}");
-                    throw;
+                    throw new ArgumentException($"Failed to connect to Redis: {ex.Message}"); 
                 }
             });
 
-            // Mendaftarkan ICacheService dengan RedisCacheService
             services.AddScoped<ICacheService, RedisCacheService>();
-            services.AddScoped<ITodoRepository, TodoRepository>();
-            services.AddScoped<ITodoDetailRepository, TodoDetailRepository>();
+            //services.AddScoped<ITodoRepository, TodoRepository>();
+            //services.AddScoped<ITodoDetailRepository, TodoDetailRepository>();
+            services.AddScoped<IUserTokenRepository, UserTokenRepository>();
 
             return services;
         }

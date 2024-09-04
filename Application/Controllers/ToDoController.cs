@@ -34,7 +34,7 @@ namespace Application.Controllers
             return Ok(todo);
         }
 
-        //[AllowAnonymous]
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TodoResponse>>> GetAllTodos()
         {
@@ -51,9 +51,9 @@ namespace Application.Controllers
                 return BadRequest();
             }
 
-            var command = new CreateTodoCommand { Todo = request };
+            var command = new CreateTodoCommand { day = request.Day, note = request.Note };
             var result = await _mediator.Send(command);
-            return CreatedAtAction(nameof(GetTodoById), result);
+            return Ok(result);
         }
 
         [HttpPut("{id}")]

@@ -1,7 +1,6 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
 using Persistence.DatabaseContext;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Application.Features.TodoDetail.Commands
 {

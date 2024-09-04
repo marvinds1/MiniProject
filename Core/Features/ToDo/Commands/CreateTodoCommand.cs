@@ -5,6 +5,7 @@ namespace Application.Features.Todo.Commands
 {
     public class CreateTodoCommand : IRequest<TodoResponse>
     {
-        public TodoRequest Todo { get; set; }
+        public string day { get; set; }
+        public string note { get; set; }
     }
 }

@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 
@@ -18,12 +16,11 @@ namespace Persistence.Repositories
         {
             try
             {
-                _database.Ping(); // Ping Redis to check connection
+                _database.Ping();
                 return true;
             }
             catch (RedisConnectionException)
             {
-                // Consider adding logging here
                 return false;
             }
         }
@@ -33,11 +30,10 @@ namespace Persistence.Repositories
             try
             {
                 string jsonData = JsonConvert.SerializeObject(data);
-                _database.StringSet(key, jsonData, TimeSpan.FromMinutes(10));
+                _database.StringSet(key, jsonData, TimeSpan.FromMinutes(60));
             }
             catch (Exception ex)
             {
-                // Add logging or error handling here
                 throw new InvalidOperationException("Error adding data to Redis", ex);
             }
         }
@@ -50,7 +46,6 @@ namespace Persistence.Repositories
             }
             catch (Exception ex)
             {
-                // Add logging or error handling here
                 throw new InvalidOperationException("Error checking key existence in Redis", ex);
             }
         }
@@ -67,7 +62,6 @@ namespace Persistence.Repositories
             }
             catch (Exception ex)
             {
-                // Add logging or error handling here
                 throw new InvalidOperationException("Error retrieving data from Redis", ex);
             }
 
@@ -82,7 +76,6 @@ namespace Persistence.Repositories
             }
             catch (Exception ex)
             {
-                // Add logging or error handling here
                 throw new InvalidOperationException("Error removing data from Redis", ex);
             }
         }
@@ -96,7 +89,6 @@ namespace Persistence.Repositories
             }
             catch (Exception ex)
             {
-                // Add logging or error handling here
                 throw new InvalidOperationException("Error clearing Redis database", ex);
             }
         }

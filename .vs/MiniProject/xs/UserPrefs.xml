@@ -1,0 +1,38 @@
+﻿<Properties StartupConfiguration="{0F68A827-FF72-4024-BB96-D68535C2631F}|https">
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.ItemProperties.Application PreferredExecutionTarget="/Applications/Google Chrome.app" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Core/Interface/Service/TokenService.cs">
+    <Files>
+      <File FileName="Core/Interface/Service/TokenService.cs" Line="35" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="MiniProject">
+            <Node name="Application">
+              <Node name="Controllers" expanded="True" />
+            </Node>
+            <Node name="Core" selected="True" />
+            <Node name="Persistence">
+              <Node name="DatabaseContext" expanded="True" />
+              <Node name="Models" expanded="True" />
+              <Node name="Repositories">
+                <Node name="ToDo" expanded="True" />
+                <Node name="ToDoDetail" expanded="True" />
+                <Node name="UserToken" expanded="True" />
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State />
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+</Properties>

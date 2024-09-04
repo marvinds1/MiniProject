@@ -7,6 +7,7 @@ using System.Text;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Configuration;
 using Core.Features.Auth;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Core.Interface.Service
 {
@@ -15,13 +16,14 @@ namespace Core.Interface.Service
         private readonly UserManager<User> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
+        private readonly TokenService _tokenService;
 
-
-        public AuthService(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+        public AuthService(UserManager<User> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, TokenService tokenService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _configuration = configuration;
+            _tokenService = tokenService;
         }
 
         public async Task<string> AddRoleToUserAsync(AddRoleToUserDto model)
@@ -48,28 +50,36 @@ namespace Core.Interface.Service
         public async Task<AuthenticationResponse> Login(LoginDTO model)
         {
             var user = await _userManager.FindByNameAsync(model.username);
-            if (user == null) return new AuthenticationResponse();
+            if (user == null) return new AuthenticationResponse { Success = false};
 
             bool isValidUser = await _userManager.CheckPasswordAsync(user, model.password);
-
-            if(!isValidUser) return new AuthenticationResponse();
-
+            if (!isValidUser) return new AuthenticationResponse { Success = false};
 
             string accessToken = GenerateAccessToken(user);
             var refreshToken = GenerateRefreshToken();
 
-            user.RefreshToken = refreshToken;
-            await _userManager.UpdateAsync(user);
+            try
+            {
+                var cacheOptions = new DistributedCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(Convert.ToDouble(_configuration["JWT_Conf:DurationInMinutes"]))
+                };
 
-            var response = new AuthenticationResponse
+                await _tokenService.StoreTokenAsync(user.Id, accessToken);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return new AuthenticationResponse
             {
                 RefreshToken = refreshToken,
                 AccessToken = accessToken,
                 Success = true
             };
-
-            return response;
         }
+
 
         public async Task<AuthDto> RegisterAsync(RegisterDto model)
         {
@@ -113,7 +123,7 @@ namespace Core.Interface.Service
 
             if (principal != null)
             {
-                var email = principal.Claims.FirstOrDefault(f => f.Type == ClaimTypes.Email);
+                var email = principal.Claims.FirstOrDefault(f => f.Type == "email");
                 var user = await _userManager.FindByEmailAsync(email?.Value);
 
                 if (user is null || user.RefreshToken != refreshTokenRequest.RefreshToken)
@@ -198,6 +208,18 @@ namespace Core.Interface.Service
             if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
                 throw new SecurityTokenException("Invalid token");
             return principal;
+        }
+
+        public async Task Logout(string userId)
+        {
+            try
+            {
+                await _tokenService.RemoveTokenAsync(userId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
         }
     }
 }

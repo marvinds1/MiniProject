@@ -3,6 +3,8 @@ using MediatR;
 using Persistence.DatabaseContext;
 using System.Threading;
 using System.Threading.Tasks;
+using Persistence.Models;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Application.Features.Todo.Commands
 {
@@ -10,7 +12,7 @@ namespace Application.Features.Todo.Commands
     {
         private readonly ApplicationDBContext _context;
 
-        public DeleteTodoCommandHandler(ApplicationDBContext context)
+        public DeleteTodoCommandHandler(ApplicationDBContext context, IDistributedCache cache)
         {
             _context = context;
         }

@@ -7,6 +7,7 @@ using Persistence.Models;
 using Microsoft.AspNetCore.Identity;
 using Persistence.DatabaseContext;
 using Core.Interface.Service;
+using Application.helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,8 +18,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ApplicationDBContext>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddPersistenceServices(builder.Configuration);
-//builder.Services.AddPersistanceRedis(builder.Configuration);
-
+builder.Services.AddSingleton(new JwtTokenHelpers());
 builder.Services.AddAuthentication(cfg =>
 {
     cfg.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -49,12 +49,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
+app.UseMiddleware<TokenAuthorizationMiddleware>();
 app.UseAuthentication();
-
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

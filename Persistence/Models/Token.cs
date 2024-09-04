@@ -1,16 +1,24 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 
 namespace Persistence.Models
 {
-    namespace Persistence.Models
+    public class UserToken
     {
-        public class UserToken : IdentityUserToken<string>
-        {
-            // Properti tambahan jika diperlukan
-            public DateTime Expiry { get; set; }
-        }
-    }
+        [Key]
+        public string UserId { get; set; }
 
+        [Key]
+        public string LoginProvider { get; set; }
+
+        [Key]
+        public string Name { get; set; }
+
+        public string Value { get; set; }
+
+        public DateTime Expiry { get; set; }
+    }
 }
+
 
