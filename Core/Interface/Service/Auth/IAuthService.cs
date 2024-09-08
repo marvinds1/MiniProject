@@ -1,7 +1,7 @@
 ﻿using Core.Features.Auth;
 using Microsoft.AspNetCore.Identity;
 
-namespace Core.Interface.Service
+namespace Core.Interface.Service.Auth
 {
     public interface IAuthService
     {

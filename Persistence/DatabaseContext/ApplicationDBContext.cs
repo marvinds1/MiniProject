@@ -6,8 +6,8 @@ namespace Persistence.DatabaseContext;
 
 public class ApplicationDBContext : IdentityDbContext<User>
 {
-    public DbSet<Todo1> Todos { get; set; }
-    public DbSet<TodoDetail1> TodoDetails { get; set; }
+    public DbSet<Todos> Todos { get; set; }
+    public DbSet<TodoDetails1> TodoDetails { get; set; }
     public DbSet<UserToken> UserToken { get; set; }
 
     public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options)
@@ -19,17 +19,18 @@ public class ApplicationDBContext : IdentityDbContext<User>
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Todo1>(entity =>
+        modelBuilder.Entity<Todos>(entity =>
         {
             entity.ToTable("Todo");
             entity.HasKey(e => e.TodoId);
             entity.Property(e => e.TodoId).HasDefaultValueSql("UUID()");
-            entity.Property(e => e.Day).IsRequired();
-            entity.Property(e => e.Note).IsRequired();
-            entity.Property(e => e.DetailCount).IsRequired();
+            entity.Property(e => e.day).IsRequired();
+            entity.Property(e => e.todayDate).IsRequired();
+            entity.Property(e => e.note).IsRequired();
+            entity.Property(e => e.detailCount).IsRequired();
         });
 
-        modelBuilder.Entity<TodoDetail1>(entity =>
+        modelBuilder.Entity<TodoDetails1>(entity =>
         {
             entity.ToTable("TodoDetail");
             entity.HasKey(e => e.TodoDetailId);
@@ -37,10 +38,6 @@ public class ApplicationDBContext : IdentityDbContext<User>
             entity.Property(e => e.Activity).IsRequired();
             entity.Property(e => e.Category).IsRequired();
             entity.Property(e => e.DetailNote).IsRequired();
-
-            entity.HasOne(d => d.Todo)
-                  .WithMany(p => p.TodoDetails)
-                  .HasForeignKey(d => d.TodoId);
         });
 
         modelBuilder.Entity<UserToken>(entity =>
@@ -50,5 +47,10 @@ public class ApplicationDBContext : IdentityDbContext<User>
             entity.Property(e => e.Value).IsRequired();
             entity.Property(e => e.Expiry).IsRequired();
         });
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.EnableDetailedErrors();
     }
 }

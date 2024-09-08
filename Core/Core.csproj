@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <PackageReference Include="MediatR" Version="12.4.0" />
+      <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -19,11 +20,18 @@
       <Folder Include="Interface\" />
       <Folder Include="Interface\Service\" />
       <Folder Include="Features\ToDo\" />
-      <Folder Include="Features\ToDo\Queries\" />
-      <Folder Include="Features\ToDo\Commands\" />
       <Folder Include="Features\ToDoDetail\" />
       <Folder Include="Features\ToDoDetail\Commands\" />
       <Folder Include="Features\ToDoDetail\Queries\" />
+      <Folder Include="Interface\Service\Auth\" />
+      <Folder Include="Interface\Service\ToDo\" />
+      <Folder Include="Interface\Service\ToDoDetail\" />
+      <Folder Include="Interface\Service\TokenService\" />
+      <Folder Include="Features\ToDo\GetAll\" />
+      <Folder Include="Features\ToDo\Get\" />
+      <Folder Include="Features\ToDo\Create\" />
+      <Folder Include="Features\ToDo\Update\" />
+      <Folder Include="Features\ToDo\Delete\" />
     </ItemGroup>
 
     <ItemGroup>
@@ -31,10 +39,17 @@
       <None Remove="Interface\" />
       <None Remove="Interface\Service\" />
       <None Remove="Features\ToDo\" />
-      <None Remove="Features\ToDo\Queries\" />
-      <None Remove="Features\ToDo\Commands\" />
       <None Remove="Features\ToDoDetail\" />
       <None Remove="Features\ToDoDetail\Commands\" />
       <None Remove="Features\ToDoDetail\Queries\" />
+      <None Remove="Interface\Service\Auth\" />
+      <None Remove="Interface\Service\ToDo\" />
+      <None Remove="Interface\Service\ToDoDetail\" />
+      <None Remove="Interface\Service\TokenService\" />
+      <None Remove="Features\ToDo\GetAll\" />
+      <None Remove="Features\ToDo\Get\" />
+      <None Remove="Features\ToDo\Create\" />
+      <None Remove="Features\ToDo\Update\" />
+      <None Remove="Features\ToDo\Delete\" />
     </ItemGroup>
 </Project>

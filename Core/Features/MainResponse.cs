@@ -1,4 +1,4 @@
-﻿namespace Core.Features.Auth
+﻿namespace Core.Features
 {
     public class MainResponse
     {

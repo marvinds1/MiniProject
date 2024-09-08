@@ -9,6 +9,7 @@
       "Core/1.0.0": {
         "dependencies": {
           "MediatR": "12.4.0",
+          "Microsoft.Extensions.Caching.Abstractions": "8.0.0",
           "Persistence": "1.0.0"
         },
         "runtime": {

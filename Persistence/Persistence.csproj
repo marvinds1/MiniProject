@@ -30,11 +30,13 @@
       <None Remove="Repositories\ToDo\" />
       <None Remove="Repositories\ToDoDetail\" />
       <None Remove="Repositories\UserToken\" />
+      <None Remove="Models\test\" />
     </ItemGroup>
     <ItemGroup>
       <Folder Include="Repositories\Cache\" />
       <Folder Include="Repositories\ToDo\" />
       <Folder Include="Repositories\ToDoDetail\" />
       <Folder Include="Repositories\UserToken\" />
+      <Folder Include="Models\test\" />
     </ItemGroup>
 </Project>

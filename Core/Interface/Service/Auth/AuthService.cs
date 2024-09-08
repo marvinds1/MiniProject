@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Core.Features.Auth;
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace Core.Interface.Service
+namespace Core.Interface.Service.Auth
 {
     public class AuthService : IAuthService
     {

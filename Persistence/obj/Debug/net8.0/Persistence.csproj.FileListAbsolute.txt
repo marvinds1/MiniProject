@@ -41,6 +41,10 @@ D:/course/Training/LearnWebApi/LearnWebApi/LearnWebApi/Persistence/obj/Debug/net
 /Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/LearnWebApi/Persistence/obj/Debug/net8.0/Persistence.pdb
 /Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/LearnWebApi/Persistence/obj/Debug/net8.0/Persistence.genruntimeconfig.cache
 /Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/LearnWebApi/Persistence/obj/Debug/net8.0/ref/Persistence.dll
+/Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/MiniProject/Persistence/bin/Debug/net8.0/Persistence.deps.json
+/Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/MiniProject/Persistence/bin/Debug/net8.0/Persistence.runtimeconfig.json
+/Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/MiniProject/Persistence/bin/Debug/net8.0/Persistence.dll
+/Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/MiniProject/Persistence/bin/Debug/net8.0/Persistence.pdb
 /Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/MiniProject/Persistence/obj/Debug/net8.0/Persistence.csproj.AssemblyReference.cache
 /Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/MiniProject/Persistence/obj/Debug/net8.0/Persistence.GeneratedMSBuildEditorConfig.editorconfig
 /Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/MiniProject/Persistence/obj/Debug/net8.0/Persistence.AssemblyInfoInputs.cache
@@ -50,9 +54,5 @@ D:/course/Training/LearnWebApi/LearnWebApi/LearnWebApi/Persistence/obj/Debug/net
 /Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/MiniProject/Persistence/obj/Debug/net8.0/Persistence.dll
 /Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/MiniProject/Persistence/obj/Debug/net8.0/refint/Persistence.dll
 /Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/MiniProject/Persistence/obj/Debug/net8.0/Persistence.pdb
-/Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/MiniProject/Persistence/bin/Debug/net8.0/Persistence.deps.json
-/Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/MiniProject/Persistence/bin/Debug/net8.0/Persistence.runtimeconfig.json
-/Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/MiniProject/Persistence/bin/Debug/net8.0/Persistence.dll
-/Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/MiniProject/Persistence/bin/Debug/net8.0/Persistence.pdb
 /Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/MiniProject/Persistence/obj/Debug/net8.0/Persistence.genruntimeconfig.cache
 /Users/Rifqi/Fileku/Kerjaan/C#/Task/PelatihanDotNet/MiniProject/Persistence/obj/Debug/net8.0/ref/Persistence.dll

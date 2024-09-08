@@ -2,9 +2,9 @@
 using Core.Features.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using Application.helpers;
-using Persistence.Models;
+using Core.Features;
+using Core.Interface.Service.Auth;
 
 namespace Application.Controllers
 {
@@ -12,12 +12,12 @@ namespace Application.Controllers
     [Authorize]
     public class AuthController : BaseController
     {
-        private readonly AuthService _authService;
+        private readonly IAuthService _authService;
         private readonly TokenService _tokenService;
         private readonly ILogger<AuthService> _logger;
         private readonly JwtTokenHelpers _jwtToken;
 
-        public AuthController(AuthService authService, TokenService tokenService, ILogger<AuthService> logger, JwtTokenHelpers jwtToken)
+        public AuthController(IAuthService authService, TokenService tokenService, ILogger<AuthService> logger, JwtTokenHelpers jwtToken)
         {
             _authService = authService;
             _tokenService = tokenService;
@@ -79,39 +79,6 @@ namespace Application.Controllers
                 Content = result,
                 IsSuccess = true,
                 ErrorMessage = ""
-            };
-
-            return Ok(response);
-        }
-
-        [AllowAnonymous]
-        [HttpPost("RefreshToken")]
-        public async Task<IActionResult> RefreshToken(RefreshTokenRequest refreshTokenRequest)
-        {
-            var response = new MainResponse();
-
-            if (refreshTokenRequest is null)
-            {
-                response.ErrorMessage = "Permintaan Invalid";
-                response.IsSuccess = false;
-
-                return BadRequest(response);
-            }
-
-            var refreshToken = await _authService.RefreshToken(refreshTokenRequest);
-
-            if (!refreshToken.Success)
-            {
-                response.IsSuccess = false;
-                return BadRequest(response);
-            }
-
-            response.IsSuccess = true;
-            response.Content = new AuthenticationResponse
-            {
-                RefreshToken = refreshToken.RefreshToken,
-                AccessToken = refreshToken.AccessToken,
-                Success = true
             };
 
             return Ok(response);

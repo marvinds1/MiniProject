@@ -6,7 +6,6 @@ using Persistence;
 using Persistence.Models;
 using Microsoft.AspNetCore.Identity;
 using Persistence.DatabaseContext;
-using Core.Interface.Service;
 using Application.helpers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,16 +14,25 @@ builder.Services.AddApplicationServices();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ApplicationDBContext>();
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("admin"));
+});
+
+builder.Services.AddIdentity<User, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDBContext>();
+
 builder.Services.AddPersistenceServices(builder.Configuration);
+
 builder.Services.AddSingleton(new JwtTokenHelpers());
+
 builder.Services.AddAuthentication(cfg =>
 {
     cfg.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     cfg.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     cfg.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(x =>
+})
+.AddJwtBearer(x =>
 {
     x.RequireHttpsMetadata = false;
     x.SaveToken = false;
@@ -32,8 +40,7 @@ builder.Services.AddAuthentication(cfg =>
     {
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8
-            .GetBytes(builder.Configuration["JWT_Conf:Key"])
+            Encoding.UTF8.GetBytes(builder.Configuration["JWT_Conf:Key"])
         ),
         ValidateIssuer = false,
         ValidateAudience = false,
@@ -49,10 +56,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-
-app.UseMiddleware<TokenAuthorizationMiddleware>();
-app.UseAuthentication();
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+
 app.Run();
+

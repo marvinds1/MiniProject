@@ -17,7 +17,7 @@ namespace Persistence.Repositories
         public async Task<UserToken?> GetUserTokenAsync(string userId)
         {
             return await _context.UserToken
-                .FirstOrDefaultAsync(ut => ut.UserId == userId && ut.LoginProvider == "custom"  && ut.Name == "AccessToken");
+                .FirstOrDefaultAsync(ut => ut.UserId == userId && ut.LoginProvider == "custom" && ut.Name == "AccessToken");
         }
 
         public async Task AddUserTokenAsync(UserToken userToken)

@@ -1,12 +1,9 @@
-﻿using Application.Features.Todo.Commands;
-using Application.Features.Todo.Queries;
+﻿//using Application.Features.Todo.Commands;
+//using Application.Features.Todo.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Persistence.Models;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Core.Features.Todo;
 
 namespace Application.Controllers
 {
@@ -22,21 +19,8 @@ namespace Application.Controllers
         }
 
         [AllowAnonymous]
-        [HttpGet("{id}")]
-        public async Task<ActionResult<TodoResponse>> GetTodoById(Guid id)
-        {
-            var query = new GetTodoByIdQuery { Id = id };
-            var todo = await _mediator.Send(query);
-            if (todo == null)
-            {
-                return NotFound();
-            }
-            return Ok(todo);
-        }
-
-        [AllowAnonymous]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TodoResponse>>> GetAllTodos()
+        public async Task<IActionResult> GetAllTodos()
         {
             var query = new GetAllTodosQuery();
             var todos = await _mediator.Send(query);
@@ -44,38 +28,53 @@ namespace Application.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> CreateTodo([FromBody] TodoRequest request)
+        public async Task<ActionResult> CreateTodo([FromBody] CreateTodoQuery request)
         {
             if (request == null)
             {
                 return BadRequest();
             }
 
-            var command = new CreateTodoCommand { day = request.Day, note = request.Note };
+            var command = new CreateTodoQuery { day = request.day, note = request.note };
             var result = await _mediator.Send(command);
             return Ok(result);
         }
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateTodo(Guid id, [FromBody] TodoRequest request)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(Guid id)
         {
-            if (id != request.TodoId)
+            var response = await _mediator.Send(new GetTodoQuery { Id = id });
+            if (!response.IsSuccess)
             {
-                return BadRequest();
+                return NotFound(response.ErrorMessage);
             }
 
-            var command = new UpdateTodoCommand { Todo = request };
-            await _mediator.Send(command);
-            return NoContent();
+            return Ok(response.Content);
         }
 
-        [Authorize(Roles = "admin")]
-        [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteTodo(Guid id)
+        [HttpPut("update")]
+        public async Task<IActionResult> Update([FromBody] UpdateTodoQuery query)
         {
-            var command = new DeleteTodoCommand { Id = id };
-            await _mediator.Send(command);
-            return NoContent();
+            var response = await _mediator.Send(query);
+            if (!response.IsSuccess)
+            {
+                return BadRequest(response.ErrorMessage);
+            }
+
+            return Ok(response.Content);
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Policy = "RequireAdminRole")]
+        public async Task<IActionResult> Delete(Guid id)
+        {
+            var response = await _mediator.Send(new DeleteTodoQuery { Id = id });
+            if (!response.IsSuccess)
+            {
+                return NotFound(response.ErrorMessage);
+            }
+
+            return Ok(response.Content);
         }
     }
 }

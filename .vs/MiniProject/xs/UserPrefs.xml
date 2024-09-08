@@ -1,27 +1,37 @@
 ﻿<Properties StartupConfiguration="{0F68A827-FF72-4024-BB96-D68535C2631F}|https">
-  <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
-  </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MonoDevelop.Ide.ItemProperties.Application PreferredExecutionTarget="/Applications/Google Chrome.app" />
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Core/Interface/Service/TokenService.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Application/Controllers/AuthController.cs">
     <Files>
-      <File FileName="Core/Interface/Service/TokenService.cs" Line="35" Column="1" />
+      <File FileName="Core/Interface/Service/ToDo/TodoService.cs" Line="22" Column="36" />
+      <File FileName="Application/Controllers/ToDoController.cs" Line="52" Column="41" />
+      <File FileName="Application/Controllers/AuthController.cs" Line="105" Column="1" />
+      <File FileName="Core/Interface/Service/Auth/AuthService.cs" Line="50" Column="51" />
+      <File FileName="Core/ApplicationServiceRegistration.cs" Line="17" Column="44" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
-          <Node name="MiniProject">
+          <Node name="MiniProject" expanded="True">
             <Node name="Application">
-              <Node name="Controllers" expanded="True" />
+              <Node name="Controllers" expanded="True">
+                <Node name="AuthController.cs" selected="True" />
+              </Node>
             </Node>
-            <Node name="Core" selected="True" />
+            <Node name="Core">
+              <Node name="Features" expanded="True">
+                <Node name="Auth" expanded="True" />
+              </Node>
+              <Node name="Interface" expanded="True">
+                <Node name="Service" expanded="True">
+                  <Node name="Auth" expanded="True" />
+                  <Node name="ToDo" expanded="True" />
+                </Node>
+              </Node>
+            </Node>
             <Node name="Persistence">
-              <Node name="DatabaseContext" expanded="True" />
               <Node name="Models" expanded="True" />
-              <Node name="Repositories">
+              <Node name="Repositories" expanded="True">
                 <Node name="ToDo" expanded="True" />
                 <Node name="ToDoDetail" expanded="True" />
                 <Node name="UserToken" expanded="True" />
@@ -30,9 +40,11 @@
           </Node>
         </State>
       </Pad>
-      <Pad Id="MonoDevelop.Debugger.WatchPad">
-        <State />
-      </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.ItemProperties.Application PreferredExecutionTarget="/Applications/Google Chrome.app" />
 </Properties>
