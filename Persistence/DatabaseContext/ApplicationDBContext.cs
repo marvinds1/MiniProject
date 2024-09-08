@@ -38,6 +38,10 @@ public class ApplicationDBContext : IdentityDbContext<User>
             entity.Property(e => e.Activity).IsRequired();
             entity.Property(e => e.Category).IsRequired();
             entity.Property(e => e.DetailNote).IsRequired();
+
+            entity.HasOne(d => d.Todo)
+                  .WithMany(p => p.TodoDetails)
+                  .HasForeignKey(d => d.TodoId);
         });
 
         modelBuilder.Entity<UserToken>(entity =>

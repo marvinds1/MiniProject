@@ -1,6 +1,4 @@
-﻿//using Application.Features.Todo.Commands;
-//using Application.Features.Todo.Queries;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Core.Features.Todo;
@@ -23,12 +21,24 @@ namespace Application.Controllers
         public async Task<IActionResult> GetAllTodos()
         {
             var query = new GetAllTodosQuery();
-            var todos = await _mediator.Send(query);
-            return Ok(todos);
+            var result = await _mediator.Send(query);
+            return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById([FromRoute] Guid id)
+        {
+            var response = await _mediator.Send(new GetTodoQuery { Id = id });
+            if (!response.IsSuccess)
+            {
+                return NotFound(response.ErrorMessage);
+            }
+
+            return Ok(response);
         }
 
         [HttpPost]
-        public async Task<ActionResult> CreateTodo([FromBody] CreateTodoQuery request)
+        public async Task<IActionResult> CreateTodo([FromBody] CreateTodoQuery request)
         {
             if (request == null)
             {
@@ -40,19 +50,7 @@ namespace Application.Controllers
             return Ok(result);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
-        {
-            var response = await _mediator.Send(new GetTodoQuery { Id = id });
-            if (!response.IsSuccess)
-            {
-                return NotFound(response.ErrorMessage);
-            }
-
-            return Ok(response.Content);
-        }
-
-        [HttpPut("update")]
+        [HttpPut]
         public async Task<IActionResult> Update([FromBody] UpdateTodoQuery query)
         {
             var response = await _mediator.Send(query);
@@ -61,20 +59,24 @@ namespace Application.Controllers
                 return BadRequest(response.ErrorMessage);
             }
 
-            return Ok(response.Content);
+            return Ok(response);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete]
         [Authorize(Policy = "RequireAdminRole")]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> DeleteTodo([FromQuery] Guid id)
         {
-            var response = await _mediator.Send(new DeleteTodoQuery { Id = id });
-            if (!response.IsSuccess)
-            {
-                return NotFound(response.ErrorMessage);
-            }
+            if (id == Guid.Empty)
+                return BadRequest("Invalid ID.");
 
-            return Ok(response.Content);
+            var query = new DeleteTodoQuery { Id = id };
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.ErrorMessage);
+
+            return Ok(result);
         }
+
     }
 }

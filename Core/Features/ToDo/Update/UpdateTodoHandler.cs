@@ -19,9 +19,7 @@ namespace Core.Features.Todo
             {
                 TodoId = request.TodoId,
                 day = request.day,
-                todayDate = request.todayDate,
-                note = request.note,
-                detailCount = request.detailCount
+                note = request.note
             });
 
             return new MainResponse

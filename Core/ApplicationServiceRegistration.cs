@@ -2,6 +2,7 @@ using System.Reflection;
 using Core.Interface.Service;
 using Core.Interface.Service.Auth;
 using Core.Interface.Service.Todo;
+using Core.Interface.Service.TodoDetail;
 using Core.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +16,7 @@ public static class ApplicationServiceRegistration
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ITodoService, TodoService>();
+        services.AddScoped<ITodoDetailService, TodoDetailService>();
         services.AddSingleton<RedisService>();
         services.AddScoped<TokenService>();
 

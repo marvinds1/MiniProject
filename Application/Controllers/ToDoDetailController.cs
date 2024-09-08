@@ -1,11 +1,13 @@
-﻿using MediatR;
+﻿using Core.Features.TodoDetail;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using Persistence.Models;
 
 namespace Application.Controllers
 {
     [ApiController]
+    [Authorize]
     public class TodoDetailController : BaseController
     {
         private readonly IMediator _mediator;
@@ -15,61 +17,75 @@ namespace Application.Controllers
             _mediator = mediator;
         }
 
-        //    [HttpGet("{id}")]
-        //    public async Task<ActionResult<TodoDetailResponse>> GetTodoDetailById(Guid id)
-        //    {
-        //        var query = new GetTodoDetailByIdQuery { Id = id };
-        //        var todoDetail = await _mediator.Send(query);
-        //        if (todoDetail == null)
-        //        {
-        //            return NotFound();
-        //        }
-        //        return Ok(todoDetail);
-        //    }
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllTodoDetails()
+        {
+            var query = new GetAllTodoDetailsQuery();
+            var result = await _mediator.Send(query);
 
-        //    [HttpGet]
-        //    public async Task<ActionResult<IEnumerable<TodoDetailResponse>>> GetAllTodoDetails()
-        //    {
-        //        var query = new GetAllTodoDetailsQuery();
-        //        var todoDetails = await _mediator.Send(query);
-        //        return Ok(todoDetails);
-        //    }
+            if (!result.IsSuccess)
+                return BadRequest(result);
 
-        //    [Authorize]
-        //    [HttpPost]
-        //    public async Task<ActionResult> CreateTodoDetail([FromBody] TodoDetailRequest request)
-        //    {
-        //        if (request == null)
-        //        {
-        //            return BadRequest();
-        //        }
+            return Ok(result);
+        }
 
-        //        var command = new CreateTodoDetailCommand { TodoDetail = request };
-        //        var result = await _mediator.Send(command);
-        //        return CreatedAtAction(nameof(GetTodoDetailById), result);
-        //    }
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetTodoDetail([FromRoute] Guid id)
+        {
+            var query = new GetTodoDetailQuery { TodoDetailId = id };
+            var result = await _mediator.Send(query);
 
-        //    [Authorize]
-        //    [HttpPut("{id}")]
-        //    public async Task<ActionResult> UpdateTodoDetail(Guid id, [FromBody] TodoDetailRequest request)
-        //    {
-        //        if (id != request.TodoDetailId)
-        //        {
-        //            return BadRequest();
-        //        }
+            if (!result.IsSuccess)
+                return NotFound(result.ErrorMessage);
 
-        //        var command = new UpdateTodoDetailCommand { TodoDetail = request };
-        //        await _mediator.Send(command);
-        //        return NoContent();
-        //    }
+            return Ok(result);
+        }
+        
 
-        //    [Authorize(Roles = "admin")]
-        //    [HttpDelete("{id}")]
-        //    public async Task<ActionResult> DeleteTodoDetail(Guid id)
-        //    {
-        //        var command = new DeleteTodoDetailCommand { Id = id };
-        //        await _mediator.Send(command);
-        //        return NoContent();
-        //    }
+        [HttpPost]
+        public async Task<IActionResult> CreateTodoDetail([FromBody] CreateTodoDetailQuery query)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.ErrorMessage);
+
+            return CreatedAtAction(nameof(GetTodoDetail), new { id = ((TodoDetails1)result.Content).TodoDetailId }, result.Content);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateTodoDetail(Guid id, [FromBody] UpdateTodoDetailQuery query)
+        {
+            if (id != query.TodoDetailId)
+                return BadRequest("Mismatched TodoDetail ID.");
+
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.ErrorMessage);
+
+            return Ok(result);
+        }
+
+        [HttpDelete]
+        [Authorize(Policy = "RequireAdminRole")]
+        public async Task<IActionResult> DeleteTodoDetail([FromQuery] Guid id)
+        {
+            if (id == Guid.Empty)
+                return BadRequest("Invalid ID.");
+
+            var query = new DeleteTodoDetailQuery { TodoDetailId = id };
+            var result = await _mediator.Send(query);
+
+            if (!result.IsSuccess)
+                return BadRequest(result.ErrorMessage);
+
+            return Ok(result);
+        }
     }
 }

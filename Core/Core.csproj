@@ -21,17 +21,19 @@
       <Folder Include="Interface\Service\" />
       <Folder Include="Features\ToDo\" />
       <Folder Include="Features\ToDoDetail\" />
-      <Folder Include="Features\ToDoDetail\Commands\" />
-      <Folder Include="Features\ToDoDetail\Queries\" />
       <Folder Include="Interface\Service\Auth\" />
-      <Folder Include="Interface\Service\ToDo\" />
-      <Folder Include="Interface\Service\ToDoDetail\" />
-      <Folder Include="Interface\Service\TokenService\" />
       <Folder Include="Features\ToDo\GetAll\" />
       <Folder Include="Features\ToDo\Get\" />
       <Folder Include="Features\ToDo\Create\" />
       <Folder Include="Features\ToDo\Update\" />
       <Folder Include="Features\ToDo\Delete\" />
+      <Folder Include="Features\ToDoDetail\1_Commands\" />
+      <Folder Include="Features\ToDoDetail\1_Queries\" />
+      <Folder Include="Features\ToDoDetail\Create\" />
+      <Folder Include="Features\ToDoDetail\Delete\" />
+      <Folder Include="Features\ToDoDetail\Get\" />
+      <Folder Include="Features\ToDoDetail\GetAll\" />
+      <Folder Include="Features\ToDoDetail\Update\" />
     </ItemGroup>
 
     <ItemGroup>
@@ -40,16 +42,18 @@
       <None Remove="Interface\Service\" />
       <None Remove="Features\ToDo\" />
       <None Remove="Features\ToDoDetail\" />
-      <None Remove="Features\ToDoDetail\Commands\" />
-      <None Remove="Features\ToDoDetail\Queries\" />
       <None Remove="Interface\Service\Auth\" />
-      <None Remove="Interface\Service\ToDo\" />
-      <None Remove="Interface\Service\ToDoDetail\" />
-      <None Remove="Interface\Service\TokenService\" />
       <None Remove="Features\ToDo\GetAll\" />
       <None Remove="Features\ToDo\Get\" />
       <None Remove="Features\ToDo\Create\" />
       <None Remove="Features\ToDo\Update\" />
       <None Remove="Features\ToDo\Delete\" />
+      <None Remove="Features\ToDoDetail\1_Commands\" />
+      <None Remove="Features\ToDoDetail\1_Queries\" />
+      <None Remove="Features\ToDoDetail\Create\" />
+      <None Remove="Features\ToDoDetail\Delete\" />
+      <None Remove="Features\ToDoDetail\Get\" />
+      <None Remove="Features\ToDoDetail\GetAll\" />
+      <None Remove="Features\ToDoDetail\Update\" />
     </ItemGroup>
 </Project>

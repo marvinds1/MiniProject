@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Persistence.DatabaseContext;
 using Persistence.Repositories;
 using Persistence.Repositories.ToDo;
-//using Persistence.Repositories.ToDoDetail;
+using Persistence.Repositories.ToDoDetail;
 using StackExchange.Redis;
 
 namespace Persistence
@@ -39,7 +39,7 @@ namespace Persistence
 
             services.AddScoped<ICacheService, RedisCacheService>();
             services.AddScoped<ITodoRepository, TodoRepository>();
-            //services.AddScoped<ITodoDetailRepository, TodoDetailRepository>();
+            services.AddScoped<ITodoDetailRepository, TodoDetailRepository>();
             services.AddScoped<IUserTokenRepository, UserTokenRepository>();
 
             return services;

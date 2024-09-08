@@ -7,8 +7,6 @@ namespace Core.Features.Todo
     {
         public Guid TodoId { get; set; }
         public string day { get; set; }
-        public DateTime todayDate { get; set; }
         public string note { get; set; }
-        public int detailCount { get; set; }
     }
 }

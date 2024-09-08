@@ -9,8 +9,7 @@ namespace Persistence.Models
         public string note { get; set; }
         public int detailCount { get; set; }
 
-        public List<TodoDetails1>? TodoDetails { get; set; }
+        public ICollection<TodoDetails1>? TodoDetails { get; set; }
     }
-
 }
 
