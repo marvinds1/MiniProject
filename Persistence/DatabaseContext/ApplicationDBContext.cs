@@ -1,6 +1,7 @@
 ﻿using Persistence.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace Persistence.DatabaseContext;
 
@@ -23,7 +24,7 @@ public class ApplicationDBContext : IdentityDbContext<User>
         {
             entity.ToTable("Todo");
             entity.HasKey(e => e.TodoId);
-            entity.Property(e => e.TodoId).HasDefaultValueSql("UUID()");
+            entity.Property(e => e.TodoId);
             entity.Property(e => e.day).IsRequired();
             entity.Property(e => e.todayDate).IsRequired();
             entity.Property(e => e.note).IsRequired();
@@ -34,7 +35,7 @@ public class ApplicationDBContext : IdentityDbContext<User>
         {
             entity.ToTable("TodoDetail");
             entity.HasKey(e => e.TodoDetailId);
-            entity.Property(e => e.TodoDetailId).HasDefaultValueSql("UUID()");
+            entity.Property(e => e.TodoDetailId);
             entity.Property(e => e.Activity).IsRequired();
             entity.Property(e => e.Category).IsRequired();
             entity.Property(e => e.DetailNote).IsRequired();
@@ -51,7 +52,54 @@ public class ApplicationDBContext : IdentityDbContext<User>
             entity.Property(e => e.Value).IsRequired();
             entity.Property(e => e.Expiry).IsRequired();
         });
+
+        SeedData(modelBuilder);
     }
+
+    private void SeedData(ModelBuilder modelBuilder)
+    {
+        var adminRoleId = Guid.NewGuid().ToString();
+        var usersRoleId = Guid.NewGuid().ToString();
+        var adminUserId = Guid.NewGuid().ToString();
+
+        modelBuilder.Entity<IdentityRole>().HasData(
+            new IdentityRole
+            {
+                Id = adminRoleId,
+                Name = "Admin",
+                NormalizedName = "ADMIN"
+            }, new IdentityRole
+            {
+                Id = usersRoleId,
+                Name = "Users",
+                NormalizedName = "USERS"
+            }
+        );
+
+        modelBuilder.Entity<User>().HasData(
+            new User
+            {
+                Id = adminUserId,
+                UserName = "admin@example.com",
+                NormalizedUserName = "ADMIN@EXAMPLE.COM",
+                Email = "admin@example.com",
+                NormalizedEmail = "ADMIN@EXAMPLE.COM",
+                EmailConfirmed = true,
+                PasswordHash = new PasswordHasher<User>().HashPassword(null, "Admin123."),
+                SecurityStamp = Guid.NewGuid().ToString(),
+                Name = "Administrator"
+            }
+        );
+
+        modelBuilder.Entity<IdentityUserRole<string>>().HasData(
+            new IdentityUserRole<string>
+            {
+                UserId = adminUserId,
+                RoleId = adminRoleId
+            }
+        );
+    }
+
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

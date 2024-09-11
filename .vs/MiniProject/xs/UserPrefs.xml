@@ -1,40 +1,57 @@
 ﻿<Properties StartupConfiguration="{0F68A827-FF72-4024-BB96-D68535C2631F}|https">
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Application/Controllers/AuthController.cs">
+  <MonoDevelop.Ide.ItemProperties.Application PreferredExecutionTarget="/Applications/Google Chrome.app" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Core/Features/ToDo/Update/UpdateTodoHandler.cs">
     <Files>
-      <File FileName="Core/Interface/Service/ToDo/TodoService.cs" Line="22" Column="36" />
-      <File FileName="Application/Controllers/ToDoController.cs" Line="52" Column="41" />
-      <File FileName="Application/Controllers/AuthController.cs" Line="105" Column="1" />
-      <File FileName="Core/Interface/Service/Auth/AuthService.cs" Line="50" Column="51" />
-      <File FileName="Core/ApplicationServiceRegistration.cs" Line="17" Column="44" />
+      <File FileName="Persistence/DatabaseContext/ApplicationDBContext.cs" Line="28" Column="32" />
+      <File FileName="Persistence/Repositories/ToDoDetail/ToDoDetaillRepository.cs" Line="47" Column="48" />
+      <File FileName="Core/Features/ToDoDetail/Create/CreateTodoDetailQuery.cs" Line="14" Column="1" />
+      <File FileName="Core/Features/ToDoDetail/Create/CreateTodoDetailHandler.cs" Line="28" Column="47" />
+      <File FileName="Core/Features/ToDoDetail/Update/UpdateTodoDetailHandler.cs" Line="29" Column="1" />
+      <File FileName="Core/Features/ToDoDetail/Update/UpdateTodoDetailQuery.cs" Line="13" Column="1" />
+      <File FileName="Core/Interface/Service/TodoDetail/TodoDetailService.cs" Line="100" Column="16" />
+      <File FileName="Core/Features/ToDo/Update/UpdateTodoHandler.cs" Line="24" Column="1" />
+      <File FileName="Core/Features/ToDo/Update/UpdateTodoQuery.cs" Line="13" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
-          <Node name="MiniProject" expanded="True">
-            <Node name="Application">
-              <Node name="Controllers" expanded="True">
-                <Node name="AuthController.cs" selected="True" />
-              </Node>
+          <Node name="MiniProject">
+            <Node name="Application" expanded="True">
+              <Node name="Controllers" expanded="True" />
             </Node>
-            <Node name="Core">
+            <Node name="Core" expanded="True">
               <Node name="Features" expanded="True">
-                <Node name="Auth" expanded="True" />
+                <Node name="ToDo" expanded="True">
+                  <Node name="GetAll" expanded="True" />
+                  <Node name="Update" expanded="True" />
+                </Node>
+                <Node name="ToDoDetail" expanded="True">
+                  <Node name="Create" expanded="True" />
+                  <Node name="Delete" expanded="True" />
+                  <Node name="Get" expanded="True" />
+                  <Node name="GetAll" expanded="True" />
+                  <Node name="Update" expanded="True" />
+                </Node>
               </Node>
               <Node name="Interface" expanded="True">
                 <Node name="Service" expanded="True">
-                  <Node name="Auth" expanded="True" />
-                  <Node name="ToDo" expanded="True" />
+                  <Node name="Todo" expanded="True" />
+                  <Node name="TodoDetail" expanded="True" />
                 </Node>
               </Node>
             </Node>
-            <Node name="Persistence">
+            <Node name="Persistence" expanded="True">
+              <Node name="DatabaseContext" expanded="True" />
               <Node name="Models" expanded="True" />
               <Node name="Repositories" expanded="True">
                 <Node name="ToDo" expanded="True" />
                 <Node name="ToDoDetail" expanded="True" />
-                <Node name="UserToken" expanded="True" />
               </Node>
             </Node>
           </Node>
@@ -42,9 +59,4 @@
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
-  <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
-  </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MonoDevelop.Ide.ItemProperties.Application PreferredExecutionTarget="/Applications/Google Chrome.app" />
 </Properties>
