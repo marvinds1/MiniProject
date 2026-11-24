@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="../build/LearnWebApi.props" />
-</Project>

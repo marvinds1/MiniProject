@@ -5,39 +5,32 @@ using Persistence.DatabaseContext;
 using Persistence.Repositories;
 using Persistence.Repositories.ToDo;
 using Persistence.Repositories.ToDoDetail;
-using StackExchange.Redis;
 
 namespace Persistence
 {
     public static class PersistenceRegistration
     {
+        public static readonly ServerVersion DefaultServerVersion = new MySqlServerVersion(new Version(8, 4, 0));
+
         public static IServiceCollection AddPersistenceServices(this IServiceCollection services, IConfiguration configuration)
         {
-            string dbConnection = configuration.GetConnectionString("Database");
-            string redisConnection = configuration.GetConnectionString("Redis");
+            var dbConnection = configuration.GetConnectionString("Database");
+            if (string.IsNullOrWhiteSpace(dbConnection))
+                throw new InvalidOperationException("ConnectionStrings:Database is not configured.");
+
+            var serverVersion = configuration["Database:ServerVersion"] is { Length: > 0 } v
+                ? ServerVersion.Parse(v)
+                : DefaultServerVersion;
 
             services.AddDbContext<ApplicationDBContext>(opt =>
-                opt.UseMySql(dbConnection, ServerVersion.AutoDetect(dbConnection))
-            );
+                opt.UseMySql(dbConnection, serverVersion, mysql => mysql.EnableRetryOnFailure()));
 
-            services.AddStackExchangeRedisCache(opt =>
-            {
-                opt.Configuration = redisConnection;
-            });
+            var redisConnection = configuration.GetConnectionString("Redis");
+            if (string.IsNullOrWhiteSpace(redisConnection))
+                services.AddDistributedMemoryCache();
+            else
+                services.AddStackExchangeRedisCache(opt => opt.Configuration = redisConnection);
 
-            services.AddSingleton<ConnectionMultiplexer>(sp =>
-            {
-                try
-                {
-                    return ConnectionMultiplexer.Connect(redisConnection);
-                }
-                catch (Exception ex)
-                {
-                    throw new ArgumentException($"Failed to connect to Redis: {ex.Message}"); 
-                }
-            });
-
-            services.AddScoped<ICacheService, RedisCacheService>();
             services.AddScoped<ITodoRepository, TodoRepository>();
             services.AddScoped<ITodoDetailRepository, TodoDetailRepository>();
             services.AddScoped<IUserTokenRepository, UserTokenRepository>();
