@@ -1,4 +1,4 @@
-﻿using Core.Features.Auth;
+using Core.Features.Auth;
 using Microsoft.AspNetCore.Identity;
 
 namespace Core.Interface.Service.Auth
@@ -8,7 +8,8 @@ namespace Core.Interface.Service.Auth
         Task<AuthDto> RegisterAsync(RegisterDto model);
         Task<string> AddRoleToUserAsync(AddRoleToUserDto model);
         Task<IdentityResult> CreateRole(CreateRoleDTO model);
-        Task<AuthenticationResponse> Login(LoginDTO model);
-
+        Task<AuthenticationResponse> Login(LoginDTO model, CancellationToken ct = default);
+        Task<AuthenticationResponse> RefreshToken(RefreshTokenRequest request, CancellationToken ct = default);
+        Task Logout(string userId, CancellationToken ct = default);
     }
 }

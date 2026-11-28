@@ -12,7 +12,6 @@ public class ApplicationDBContext : IdentityDbContext<User>
 
     public DbSet<Todos> Todos => Set<Todos>();
     public DbSet<TodoDetails1> TodoDetails => Set<TodoDetails1>();
-    public DbSet<UserToken> UserToken => Set<UserToken>();
 
     public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options)
         : base(options)
@@ -31,7 +30,6 @@ public class ApplicationDBContext : IdentityDbContext<User>
             entity.Property(e => e.day).IsRequired();
             entity.Property(e => e.todayDate).IsRequired();
             entity.Property(e => e.note).IsRequired();
-            entity.Property(e => e.detailCount).IsRequired();
             entity.Property(e => e.Version).IsConcurrencyToken();
             entity.HasIndex(e => new { e.UserId, e.todayDate });
 
@@ -51,15 +49,8 @@ public class ApplicationDBContext : IdentityDbContext<User>
 
             entity.HasOne(d => d.Todo)
                   .WithMany(p => p.TodoDetails)
-                  .HasForeignKey(d => d.TodoId);
-        });
-
-        modelBuilder.Entity<UserToken>(entity =>
-        {
-            entity.ToTable("UserToken");
-            entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name });
-            entity.Property(e => e.Value).IsRequired();
-            entity.Property(e => e.Expiry).IsRequired();
+                  .HasForeignKey(d => d.TodoId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<IdentityRole>().HasData(

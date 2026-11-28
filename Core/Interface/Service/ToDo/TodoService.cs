@@ -1,119 +1,51 @@
-﻿using Core.Features.Todo;
-using Core.Interface.Service.Todo;
-using Core.Services;
-using Persistence.Repositories.ToDo;
+using Core.Caching;
 using Persistence.Models;
+using Persistence.Repositories.ToDo;
 
 namespace Core.Interface.Service.Todo
 {
     public class TodoService : ITodoService
     {
-        private readonly ITodoRepository _todoRepository;
-        private readonly RedisService _redisService;
+        private readonly ITodoRepository _todos;
+        private readonly UserDataCache _cache;
+        private readonly TimeProvider _time;
 
-        public TodoService(ITodoRepository todoRepository, RedisService redisService)
+        public TodoService(ITodoRepository todos, UserDataCache cache, TimeProvider time)
         {
-            _todoRepository = todoRepository;
-            _redisService = redisService;
+            _todos = todos;
+            _cache = cache;
+            _time = time;
         }
 
-        public async Task<Todo1> Create(CreateTodoQuery item)
+        public Task<Todo1?> Get(Guid id, string userId, CancellationToken ct = default) =>
+            _todos.GetById(id, userId, ct);
+
+        public Task<PagedResult<Todo1>> GetPage(string userId, int page, int pageSize, CancellationToken ct = default) =>
+            _cache.GetOrCreate(userId, $"todos:p{page}:s{pageSize}", () => _todos.GetPage(userId, page, pageSize, ct), ct);
+
+        public async Task<Todo1> Create(string userId, string day, string note, CancellationToken ct = default)
         {
-            var todos = await _todoRepository.CreateTodo(item.day, item.note);
-            string cacheKey = "Todos";
-
-            if (await _redisService.IsRedisAvailableAsync())
-            {
-                await GetAll(false);
-                var allTodos = await _todoRepository.GetAllTodos();
-                await _redisService.SaveToRedisAsync(cacheKey, allTodos);
-            }
-
-            return new Todo1
-            {
-                todayDate = todos.todayDate,
-                day = todos.day,
-                note = todos.note,
-                detailCount = todos.detailCount
-            };
-        }
-
-        public async Task<IEnumerable<Todo1>> GetAll(bool checkRedisAvailability = true)
-        {
-            string cacheKey = "Todos";
-            bool isRedisAvailable = !checkRedisAvailability || await _redisService.IsRedisAvailableAsync();
-            IEnumerable<Todo1> todos;
-
-            if (isRedisAvailable)
-            {
-                var cachedTodos = await _redisService.GetFromRedisAsync<Todo1>(cacheKey);
-                if (cachedTodos != null)
-                {
-                    return cachedTodos;
-                }
-            }
-
-            todos = await _todoRepository.GetAllTodos();
-
-            if (isRedisAvailable)
-            {
-                await _redisService.SaveToRedisAsync(cacheKey, todos);
-            }
-
-            return todos;
-        }
-
-        public async Task<Todo1> Get(Guid id)
-        {
-            string cacheKey = $"Todo_{id}";
-
-            if (await _redisService.IsRedisAvailableAsync())
-            {
-                var cachedTodo = await _redisService.GetFromRedisAsync<Todo1>(cacheKey);
-                if (cachedTodo != null && cachedTodo.Any())
-                {
-                    return cachedTodo.First();
-                }
-            }
-
-            var todo = await _todoRepository.GetTodoById(id);
-
-            if (todo != null && await _redisService.IsRedisAvailableAsync())
-            {
-                await _redisService.SaveToRedisAsync(cacheKey, new List<Todo1> { todo });
-            }
-
+            var todo = await _todos.Create(userId, day, note, _time.GetUtcNow().UtcDateTime, ct);
+            await _cache.Invalidate(userId, ct);
             return todo;
         }
 
-        public async Task<Todo1> Update(Todos item)
+        public async Task<(WriteResult Result, Todo1? Todo)> Update(Guid id, string userId, string day, string note, int version, CancellationToken ct = default)
         {
-            var updatedTodo = await _todoRepository.UpdateTodo(item);
-            string cacheKey = $"Todo_{item.TodoId}";
+            var result = await _todos.Update(id, userId, day, note, version, ct);
+            if (result != WriteResult.Ok) return (result, null);
 
-            if (await _redisService.IsRedisAvailableAsync())
-            {
-                await _redisService.SaveToRedisAsync(cacheKey, new List<Todo1> { updatedTodo });
-                var allTodos = await _todoRepository.GetAllTodos();
-                await _redisService.SaveToRedisAsync("Todos", allTodos);
-            }
-
-            return updatedTodo;
+            await _cache.Invalidate(userId, ct);
+            return (result, await _todos.GetById(id, userId, ct));
         }
 
-        public async Task<bool> Delete(Guid id)
+        public async Task<bool> Delete(Guid id, string userId, bool isAdmin, CancellationToken ct = default)
         {
-            var result = await _todoRepository.DeleteTodoById(id);
-            string cacheKey = $"Todo_{id}";
+            var owner = await _todos.Delete(id, isAdmin ? null : userId, ct);
+            if (owner is null) return false;
 
-            if (result && await _redisService.IsRedisAvailableAsync())
-            {
-                await _redisService.RemoveFromRedisAsync(cacheKey);
-                var allTodos = await _todoRepository.GetAllTodos();
-                await _redisService.SaveToRedisAsync("Todos", allTodos);
-            }
-
-            return result;
+            await _cache.Invalidate(owner, ct);
+            return true;
         }
     }
 }

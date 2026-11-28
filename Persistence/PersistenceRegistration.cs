@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Persistence.DatabaseContext;
-using Persistence.Repositories;
+using Persistence.Repositories.RefreshToken;
 using Persistence.Repositories.ToDo;
 using Persistence.Repositories.ToDoDetail;
 
@@ -33,7 +33,7 @@ namespace Persistence
 
             services.AddScoped<ITodoRepository, TodoRepository>();
             services.AddScoped<ITodoDetailRepository, TodoDetailRepository>();
-            services.AddScoped<IUserTokenRepository, UserTokenRepository>();
+            services.AddScoped<IRefreshTokenStore, RefreshTokenStore>();
 
             return services;
         }

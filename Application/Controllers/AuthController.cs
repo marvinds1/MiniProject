@@ -1,104 +1,83 @@
-﻿using Core.Interface.Service;
+using Application.Infrastructure;
+using Core.Features;
 using Core.Features.Auth;
+using Core.Interface.Service.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Application.helpers;
-using Core.Features;
-using Core.Interface.Service.Auth;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Application.Controllers
 {
-    [ApiController]
     [Authorize]
     public class AuthController : BaseController
     {
         private readonly IAuthService _authService;
-        private readonly TokenService _tokenService;
-        private readonly ILogger<AuthService> _logger;
-        private readonly JwtTokenHelpers _jwtToken;
 
-        public AuthController(IAuthService authService, TokenService tokenService, ILogger<AuthService> logger, JwtTokenHelpers jwtToken)
+        public AuthController(IAuthService authService)
         {
             _authService = authService;
-            _tokenService = tokenService;
-            _logger = logger;
-            _jwtToken = jwtToken;
         }
 
         [AllowAnonymous]
-        [HttpPost]
-        [Route("Register")]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
+        [HttpPost("Register")]
         public async Task<IActionResult> Register(RegisterDto model)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
             var result = await _authService.RegisterAsync(model);
-            if (!result.IsAuthenticated)
-            {
-                return BadRequest(result.Message);
-            }
+            if (result.IsDuplicate) return Problem(statusCode: StatusCodes.Status409Conflict, detail: result.Message);
+            if (!result.IsAuthenticated) return Problem(statusCode: StatusCodes.Status400BadRequest, detail: result.Message);
 
             return Ok(result);
-        }
-
-
-        [HttpPost]
-        [Route("AddRoleToUser")]
-        public async Task<IActionResult> AddRoleToUser(AddRoleToUserDto model)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            var result = await _authService.AddRoleToUserAsync(model);
-            return Ok(result);
-        }
-
-        [HttpPost]
-        [Route("CreateRole")]
-        public async Task<IActionResult> CreateRole(CreateRoleDTO model)
-        {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-
-            var response = await _authService.CreateRole(model);
-            if (!response.Succeeded) return BadRequest(response);
-
-            return Ok(response);
         }
 
         [AllowAnonymous]
-        [HttpPost]
-        [Route("Login")]
-        public async Task<IActionResult> Login(LoginDTO model)
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login(LoginDTO model, CancellationToken ct)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            var result = await _authService.Login(model, ct);
+            if (!result.Success) return Problem(statusCode: StatusCodes.Status401Unauthorized, detail: "Invalid username or password");
 
-            var result = await _authService.Login(model);
-            if (!result.Success) return Unauthorized();
+            return Ok(MainResponse.Ok(result));
+        }
 
-            var response = new MainResponse
-            {
-                Content = result,
-                IsSuccess = true,
-                ErrorMessage = ""
-            };
+        [AllowAnonymous]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
+        [HttpPost("Refresh")]
+        public async Task<IActionResult> Refresh(RefreshTokenRequest model, CancellationToken ct)
+        {
+            var result = await _authService.RefreshToken(model, ct);
+            if (!result.Success) return Problem(statusCode: StatusCodes.Status401Unauthorized, detail: "Invalid refresh token");
 
-            return Ok(response);
+            return Ok(MainResponse.Ok(result));
         }
 
         [HttpPost("Logout")]
-        public async Task<IActionResult> Logout()
+        public async Task<IActionResult> Logout(CancellationToken ct)
         {
-            var token = Request.Headers["Authorization"].ToString().Substring("Bearer ".Length).Trim();
-            if (string.IsNullOrEmpty(token))
-            {
-                return Unauthorized("Missing or invalid Authorization header.");
-            }
-
-            var userId = _jwtToken.GetUserIdFromToken(token);
-
-            await _tokenService.RemoveTokenAsync(userId);
-
+            await _authService.Logout(CurrentUserId, ct);
             return NoContent();
         }
 
+        [Authorize(Policy = AuthorizationPolicies.RequireAdminRole)]
+        [HttpPost("AddRoleToUser")]
+        public async Task<IActionResult> AddRoleToUser(AddRoleToUserDto model)
+        {
+            var error = await _authService.AddRoleToUserAsync(model);
+            if (!string.IsNullOrEmpty(error)) return Problem(statusCode: StatusCodes.Status400BadRequest, detail: error);
+
+            return Ok(MainResponse.Ok("Role added"));
+        }
+
+        [Authorize(Policy = AuthorizationPolicies.RequireAdminRole)]
+        [HttpPost("CreateRole")]
+        public async Task<IActionResult> CreateRole(CreateRoleDTO model)
+        {
+            var response = await _authService.CreateRole(model);
+            if (!response.Succeeded)
+                return Problem(statusCode: StatusCodes.Status400BadRequest, detail: string.Join(", ", response.Errors.Select(e => e.Description)));
+
+            return Ok(MainResponse.Ok("Role created"));
+        }
     }
 }

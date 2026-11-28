@@ -1,4 +1,5 @@
-﻿using Core.Features.TodoDetail;
+using System.ComponentModel.DataAnnotations;
+using Core.Features.TodoDetail;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,7 +7,6 @@ using Persistence.Models;
 
 namespace Application.Controllers
 {
-    [ApiController]
     [Authorize]
     public class TodoDetailController : BaseController
     {
@@ -18,74 +18,26 @@ namespace Application.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetAllTodoDetails()
-        {
-            var query = new GetAllTodoDetailsQuery();
-            var result = await _mediator.Send(query);
+        public async Task<IActionResult> GetAllTodoDetails([FromQuery, Range(1, 100000)] int page = 1, [FromQuery, Range(1, 100)] int pageSize = 10, CancellationToken ct = default) =>
+            Ok(await _mediator.Send(new GetAllTodoDetailsQuery(CurrentUserId, page, pageSize), ct));
 
-            if (!result.IsSuccess)
-                return BadRequest(result);
-
-            return Ok(result);
-        }
-
-        [HttpGet("{id}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetTodoDetail([FromRoute] Guid id)
-        {
-            var query = new GetTodoDetailQuery { TodoDetailId = id };
-            var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess)
-                return NotFound(result.ErrorMessage);
-
-            return Ok(result);
-        }
-        
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetTodoDetail(Guid id, CancellationToken ct) =>
+            FromResponse(await _mediator.Send(new GetTodoDetailQuery(id, CurrentUserId), ct));
 
         [HttpPost]
-        public async Task<IActionResult> CreateTodoDetail([FromBody] CreateTodoDetailQuery query)
+        public async Task<IActionResult> CreateTodoDetails(CreateTodoDetailsRequest request, CancellationToken ct)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess)
-                return BadRequest(result.ErrorMessage);
-
-            return CreatedAtAction(nameof(GetTodoDetail), new { id = ((TodoDetails1)result.Content).TodoDetailId }, result.Content);
+            var items = request.Items.Select(i => new NewTodoDetail(i.Activity, i.Category, i.DetailNote)).ToList();
+            return FromResponse(await _mediator.Send(new CreateTodoDetailQuery(request.TodoId, CurrentUserId, items), ct));
         }
 
-        [HttpPut]
-        public async Task<IActionResult> UpdateTodoDetail(Guid id, [FromBody] UpdateTodoDetailQuery query)
-        {
-            if (id != query.TodoDetailId)
-                return BadRequest("Mismatched TodoDetail ID.");
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> UpdateTodoDetail(Guid id, TodoDetailItem request, CancellationToken ct) =>
+            FromResponse(await _mediator.Send(new UpdateTodoDetailQuery(id, CurrentUserId, new NewTodoDetail(request.Activity, request.Category, request.DetailNote)), ct));
 
-            var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess)
-                return BadRequest(result.ErrorMessage);
-
-            return Ok(result);
-        }
-
-        [HttpDelete]
-        [Authorize(Policy = "RequireAdminRole")]
-        public async Task<IActionResult> DeleteTodoDetail([FromQuery] Guid id)
-        {
-            if (id == Guid.Empty)
-                return BadRequest("Invalid ID.");
-
-            var query = new DeleteTodoDetailQuery { TodoDetailId = id };
-            var result = await _mediator.Send(query);
-
-            if (!result.IsSuccess)
-                return BadRequest(result.ErrorMessage);
-
-            return Ok(result);
-        }
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> DeleteTodoDetail(Guid id, CancellationToken ct) =>
+            FromResponse(await _mediator.Send(new DeleteTodoDetailQuery(id, CurrentUserId, IsAdmin), ct));
     }
 }

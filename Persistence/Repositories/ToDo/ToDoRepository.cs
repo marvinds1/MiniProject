@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using Persistence.DatabaseContext;
 using Persistence.Models;
@@ -15,90 +13,93 @@ namespace Persistence.Repositories.ToDo
             _context = context;
         }
 
-        public async Task<IEnumerable<Todo1>> GetAllTodos()
+        public async Task<PagedResult<Todo1>> GetPage(string userId, int page, int pageSize, CancellationToken ct = default)
         {
-            return await _context.Todos.Select(todo => new Todo1
-            {
-                day = todo.day,
-                todayDate = todo.todayDate,
-                note = todo.note,
-                detailCount = todo.detailCount
-            }).ToListAsync();
+            var query = _context.Todos.AsNoTracking().Where(t => t.UserId == userId);
+            var total = await query.CountAsync(ct);
+            var items = await query
+                .OrderByDescending(t => t.todayDate).ThenBy(t => t.TodoId)
+                .Skip((page - 1) * pageSize).Take(pageSize)
+                .Select(t => new Todo1
+                {
+                    todoId = t.TodoId,
+                    day = t.day,
+                    todayDate = t.todayDate,
+                    note = t.note,
+                    detailCount = t.TodoDetails!.Count(),
+                    version = t.Version
+                })
+                .ToListAsync(ct);
+
+            return new PagedResult<Todo1> { Items = items, Page = page, PageSize = pageSize, TotalItems = total };
         }
 
-        public async Task<Todos> CreateTodo(string day, string note)
+        public Task<Todo1?> GetById(Guid id, string userId, CancellationToken ct = default)
         {
-            var creteTodo = new Todos
+            return _context.Todos.AsNoTracking()
+                .Where(t => t.TodoId == id && t.UserId == userId)
+                .Select(t => new Todo1
+                {
+                    todoId = t.TodoId,
+                    day = t.day,
+                    todayDate = t.todayDate,
+                    note = t.note,
+                    detailCount = t.TodoDetails!.Count(),
+                    version = t.Version
+                })
+                .FirstOrDefaultAsync(ct);
+        }
+
+        public async Task<Todo1> Create(string userId, string day, string note, DateTime now, CancellationToken ct = default)
+        {
+            var todo = new Todos
             {
                 TodoId = Guid.NewGuid(),
+                UserId = userId,
                 day = day,
-                todayDate = DateTime.Now,
-                note = note,
-                detailCount = 0
+                todayDate = now,
+                note = note
             };
 
-            try
-            {
-                _context.Todos.Add(creteTodo);
-                await _context.SaveChangesAsync();
-            }
-            catch (Exception)
-            {}
+            _context.Todos.Add(todo);
+            await _context.SaveChangesAsync(ct);
 
-            return creteTodo;
-            
+            return new Todo1 { todoId = todo.TodoId, day = day, todayDate = now, note = note, version = todo.Version };
         }
 
-        public async Task<Todo1?> GetTodoById(Guid id)
+        public async Task<WriteResult> Update(Guid id, string userId, string day, string note, int expectedVersion, CancellationToken ct = default)
         {
-            var todo = await _context.Todos.FindAsync(id);
-            return todo == null ? null : MapToTodo1(todo);
+            var rows = await _context.Todos
+                .Where(t => t.TodoId == id && t.UserId == userId && t.Version == expectedVersion)
+                .ExecuteUpdateAsync(s => s
+                    .SetProperty(t => t.day, day)
+                    .SetProperty(t => t.note, note)
+                    .SetProperty(t => t.Version, t => t.Version + 1), ct);
+
+            if (rows == 1) return WriteResult.Ok;
+
+            var exists = await _context.Todos.AnyAsync(t => t.TodoId == id && t.UserId == userId, ct);
+            return exists ? WriteResult.Conflict : WriteResult.NotFound;
         }
 
-        public async Task<Todo1> UpdateTodo(Todos item)
+        public async Task<string?> Delete(Guid id, string? requiredOwnerId, CancellationToken ct = default)
         {
-            var existingTodo = await _context.Todos.FindAsync(item.TodoId);
+            var query = _context.Todos.Where(t => t.TodoId == id);
+            if (requiredOwnerId is not null)
+                query = query.Where(t => t.UserId == requiredOwnerId);
 
-            if (existingTodo == null)
-            {
-                throw new KeyNotFoundException("Todo not found");
-            }
+            var owner = await query.Select(t => new { t.UserId }).FirstOrDefaultAsync(ct);
+            if (owner is null) return null;
 
-            // Update properties
-            existingTodo.day = item.day;
-            existingTodo.note = item.note;
-            existingTodo.detailCount = item.detailCount;
-
-            _context.Todos.Update(existingTodo);
-            await _context.SaveChangesAsync();
-
-            return MapToTodo1(existingTodo);
+            var rows = await query.ExecuteDeleteAsync(ct);
+            return rows == 1 ? owner.UserId ?? string.Empty : null;
         }
 
-        public async Task<bool> DeleteTodoById(Guid id)
+        public Task<int> AssignOwnerlessTo(string userId, CancellationToken ct = default)
         {
-            var todo = await _context.Todos.FindAsync(id);
-            if (todo == null)
-            {
-                return false;
-            }
-
-            _context.Todos.Remove(todo);
-            await _context.SaveChangesAsync();
-
-            return true;
-        }
-
-        private Todo1 MapToTodo1(Todos todo)
-        {
-            return new Todo1
-            {
-                todayDate = todo.todayDate,
-                day = todo.day,
-                note = todo.note,
-                detailCount = todo.detailCount
-            };
+            return _context.Todos
+                .Where(t => t.UserId == null)
+                .ExecuteUpdateAsync(s => s.SetProperty(t => t.UserId, userId), ct);
         }
     }
-
 }

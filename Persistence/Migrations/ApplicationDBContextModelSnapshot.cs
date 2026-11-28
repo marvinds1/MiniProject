@@ -17,7 +17,7 @@ namespace Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("ProductVersion", "8.0.34")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
@@ -147,13 +147,6 @@ namespace Persistence.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = "8499336b-4af6-4eee-acba-82888c001558",
-                            RoleId = "03a8da38-b8ff-4ea8-a2eb-f5204f06c72e"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -209,12 +202,17 @@ namespace Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<string>("UserId")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("int");
+
                     b.Property<string>("day")
                         .IsRequired()
                         .HasColumnType("longtext");
-
-                    b.Property<int>("detailCount")
-                        .HasColumnType("int");
 
                     b.Property<string>("note")
                         .IsRequired()
@@ -224,6 +222,8 @@ namespace Persistence.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("TodoId");
+
+                    b.HasIndex("UserId", "todayDate");
 
                     b.ToTable("Todo", (string)null);
                 });
@@ -275,8 +275,16 @@ namespace Persistence.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<string>("RefreshToken")
-                        .HasColumnType("longtext");
+                    b.Property<string>("PreviousRefreshTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<DateTime?>("RefreshTokenExpiresAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("RefreshTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("longtext");
@@ -298,48 +306,6 @@ namespace Persistence.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "8499336b-4af6-4eee-acba-82888c001558",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "6501251a-b731-4d19-8835-e3cef36aa590",
-                            Email = "admin@example.com",
-                            EmailConfirmed = true,
-                            LockoutEnabled = false,
-                            Name = "Administrator",
-                            NormalizedEmail = "ADMIN@EXAMPLE.COM",
-                            NormalizedUserName = "ADMIN@EXAMPLE.COM",
-                            PasswordHash = "AQAAAAIAAYagAAAAENWKBytwKYSh6n2HeiG3jBr3MmTKW3EV8Ckn4T1S+t0OEjoTOkgaIFfSaS+z6hvxSQ==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "f639d6cc-f18b-4d09-9e5f-9eecadfbac23",
-                            TwoFactorEnabled = false,
-                            UserName = "admin@example.com"
-                        });
-                });
-
-            modelBuilder.Entity("Persistence.Models.UserToken", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("LoginProvider")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<DateTime>("Expiry")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("UserId", "LoginProvider", "Name");
-
-                    b.ToTable("UserToken", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -402,6 +368,16 @@ namespace Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Todo");
+                });
+
+            modelBuilder.Entity("Persistence.Models.Todos", b =>
+                {
+                    b.HasOne("Persistence.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Persistence.Models.Todos", b =>

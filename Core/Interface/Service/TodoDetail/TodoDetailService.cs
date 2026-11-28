@@ -1,126 +1,51 @@
-﻿using Core.Features.TodoDetail;
-using Core.Interface.Service.TodoDetail;
-using Core.Services;
+using Core.Caching;
 using Persistence.Models;
 using Persistence.Repositories.ToDoDetail;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Core.Interface.Service.TodoDetail
 {
     public class TodoDetailService : ITodoDetailService
     {
-        private readonly ITodoDetailRepository _todoDetailRepository;
-        private readonly RedisService _redisService;
-        private const string CacheKeyPrefix = "TodoDetail_";
+        private readonly ITodoDetailRepository _details;
+        private readonly UserDataCache _cache;
 
-        public TodoDetailService(ITodoDetailRepository todoDetailRepository, RedisService redisService)
+        public TodoDetailService(ITodoDetailRepository details, UserDataCache cache)
         {
-            _todoDetailRepository = todoDetailRepository;
-            _redisService = redisService;
+            _details = details;
+            _cache = cache;
         }
 
-        public async Task<TodoDetails1> GetTodoDetailById(Guid id)
+        public Task<TodoDetailResponse?> Get(Guid id, string userId, CancellationToken ct = default) =>
+            _details.GetById(id, userId, ct);
+
+        public Task<IReadOnlyList<TodoDetailResponse>?> GetByTodo(Guid todoId, string userId, CancellationToken ct = default) =>
+            _details.GetByTodo(todoId, userId, ct);
+
+        public Task<PagedResult<TodoWithDetails>> GetPage(string userId, int page, int pageSize, CancellationToken ct = default) =>
+            _cache.GetOrCreate(userId, $"details:p{page}:s{pageSize}", () => _details.GetPage(userId, page, pageSize, ct), ct);
+
+        public async Task<IReadOnlyList<TodoDetailResponse>?> CreateMany(Guid todoId, string userId, IReadOnlyList<NewTodoDetail> items, CancellationToken ct = default)
         {
-            string cacheKey = $"{CacheKeyPrefix}{id}";
-            TodoDetails1 todoDetail = null;
-
-            if (await _redisService.IsRedisAvailableAsync())
-            {
-                var cachedTodoDetail = await _redisService.GetFromRedisAsync<TodoDetails1>(cacheKey);
-                if (cachedTodoDetail != null)
-                {
-                    return cachedTodoDetail.FirstOrDefault();
-                }
-            }
-
-            todoDetail = await _todoDetailRepository.GetTodoDetailById(id);
-
-            if (todoDetail != null && await _redisService.IsRedisAvailableAsync())
-            {
-                await _redisService.SaveToRedisAsync(cacheKey, new List<TodoDetails1> { todoDetail });
-            }
-
-            return todoDetail;
+            var created = await _details.CreateMany(todoId, userId, items, ct);
+            if (created is not null) await _cache.Invalidate(userId, ct);
+            return created;
         }
 
-        public async Task<IEnumerable<TodoWithDetails>> GetAllTodoDetails()
+        public async Task<TodoDetailResponse?> Update(Guid id, string userId, NewTodoDetail values, CancellationToken ct = default)
         {
-            string cacheKey = $"{CacheKeyPrefix}All";
-            IEnumerable<TodoWithDetails> allTodoDetails = null;
+            if (!await _details.Update(id, userId, values, ct)) return null;
 
-            if (await _redisService.IsRedisAvailableAsync())
-            {
-                var cachedTodoDetails = await _redisService.GetFromRedisAsync<TodoWithDetails>(cacheKey);
-                if (cachedTodoDetails != null)
-                {
-                    return cachedTodoDetails;
-                }
-            }
-
-            allTodoDetails = await _todoDetailRepository.GetAllTodoDetails();
-
-            if (allTodoDetails != null && await _redisService.IsRedisAvailableAsync())
-            {
-                await _redisService.SaveToRedisAsync(cacheKey, allTodoDetails);
-            }
-
-            return allTodoDetails;
+            await _cache.Invalidate(userId, ct);
+            return await _details.GetById(id, userId, ct);
         }
 
-        public async Task CreateTodoDetail(CreateTodoDetailQuery todoDetail)
+        public async Task<bool> Delete(Guid id, string userId, bool isAdmin, CancellationToken ct = default)
         {
-            await _todoDetailRepository.CreateTodoDetail(new TodoDetails1
-            {
-                TodoDetailId = new Guid(),
-                TodoId = todoDetail.TodoId,
-                Activity = todoDetail.Activity,
-                DetailNote = todoDetail.DetailNote,
-                Category = todoDetail.Category
-            });
+            var owner = await _details.Delete(id, isAdmin ? null : userId, ct);
+            if (owner is null) return false;
 
-            string cacheKey = $"{CacheKeyPrefix}All";
-
-            // Cek ketersediaan Redis
-            if (await _redisService.IsRedisAvailableAsync())
-            {
-                var allTodoDetails = await _todoDetailRepository.GetAllTodoDetails();
-                await _redisService.SaveToRedisAsync(cacheKey, allTodoDetails);
-            }
-        }
-
-        public async Task UpdateTodoDetail(UpdateTodoDetailQuery todoDetail)
-        {
-            await _todoDetailRepository.UpdateTodoDetail(new TodoDetails1
-            {
-                TodoDetailId = todoDetail.TodoDetailId,
-                Activity = todoDetail.Activity,
-                DetailNote = todoDetail.DetailNote,
-                Category = todoDetail.Category
-            });
-
-            string cacheKey = $"{CacheKeyPrefix}{todoDetail.TodoDetailId}";
-
-            if (await _redisService.IsRedisAvailableAsync())
-            {
-                await _redisService.SaveToRedisAsync(cacheKey, new List<TodoDetails1>());
-            }
-        }
-
-        public async Task DeleteTodoDetail(Guid id)
-        {
-            await _todoDetailRepository.DeleteTodoDetail(id);
-
-            string cacheKey = $"{CacheKeyPrefix}{id}";
-            string allCacheKey = $"{CacheKeyPrefix}All";
-
-            if (await _redisService.IsRedisAvailableAsync())
-            {
-                await _redisService.RemoveFromRedisAsync(cacheKey);
-
-                var allTodoDetails = await _todoDetailRepository.GetAllTodoDetails();
-                await _redisService.SaveToRedisAsync(allCacheKey, allTodoDetails);
-            }
+            await _cache.Invalidate(owner, ct);
+            return true;
         }
     }
 }

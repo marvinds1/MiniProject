@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Core.Features.Auth
 {
@@ -9,5 +9,8 @@ namespace Core.Features.Auth
         public string? Username { get; set; }
         public string? Email { get; set; }
         public List<string>? Roles { get; set; }
+
+        [JsonIgnore]
+        public bool IsDuplicate { get; set; }
     }
 }
